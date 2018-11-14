@@ -19,7 +19,7 @@ client.on('ready', () => {
   })
 
   // Bot intro
-  let generalChannel = client.channels.get('167348866243362817')
+  let generalChannel = client.channels.get('167348561871241216')
   generalChannel.send(randomWelcomeMessage())
   // const attachment = new Discord.Attachment('./MJ.png')
   // generalChannel.send(attachment)
@@ -45,9 +45,8 @@ const reactOnMichael = receivedMessage => {
     receivedMessage.content.includes('Michael')
   ) {
     try {
-      receivedMessage.react(
-        receivedMessage.guild.emojis.get('512344824616321024'),
-      )
+      const michaelFaceEmoji = '248852537116065792'
+      receivedMessage.react(receivedMessage.guild.emojis.get(michaelFaceEmoji))
     } catch (error) {
       console.log("Emoji doesn't exist.")
     }
