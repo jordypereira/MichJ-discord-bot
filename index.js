@@ -20,9 +20,9 @@ client.on('ready', () => {
 
   // Bot intro
   let generalChannel = client.channels.get('167348866243362817')
-  const attachment = new Discord.Attachment('./MJ.png')
   generalChannel.send(randomWelcomeMessage())
-  generalChannel.send(attachment)
+  // const attachment = new Discord.Attachment('./MJ.png')
+  // generalChannel.send(attachment)
 })
 
 client.on('message', receivedMessage => {
