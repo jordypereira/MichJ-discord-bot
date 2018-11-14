@@ -7,17 +7,18 @@ client.on('ready', () => {
 
   client.user.setActivity('Meisjes', { type: 'WATCHING' })
 
+  // Print Channel info
   client.guilds.forEach(guild => {
     console.log(guild.name)
     guild.emojis.forEach(emoji => {
       console.log(`${emoji.name}'s id: ${emoji.id}`)
     })
-    // general text 167348866243362817
     guild.channels.forEach(channel => {
       console.log(`- ${channel.name} ${channel.type} ${channel.id}`)
     })
   })
 
+  // Bot intro
   let generalChannel = client.channels.get('167348866243362817')
   const attachment = new Discord.Attachment('./MJ.png')
   generalChannel.send(randomWelcomeMessage())
@@ -98,7 +99,7 @@ const addCommand = (args, receivedMessage) => {
   args.forEach(value => {
     answer += parseFloat(value)
   })
-  receivedMessage.channel.send('Pak dat het ' + answer.toString() + ' is')
+  receivedMessage.channel.send(`Pak dat het ${answer.toString()} is`)
 }
 
 client.login(process.env.APPLICATION_KEY)
