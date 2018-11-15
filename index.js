@@ -106,6 +106,8 @@ const addCommand = (args, receivedMessage) => {
 const wieCommand = (args, receivedMessage) => {
   if (args[0] == 'is' && (args[1] == 'michael' || args[1] == 'Michael')) {
     wieIsMichaelCommand(receivedMessage)
+  } else {
+    receivedMessage.channel.send('Wie of wat maakt nie uit')
   }
 }
 
@@ -117,7 +119,7 @@ const wieIsMichaelCommand = receivedMessage => {
   ]
   const idx = Math.floor(Math.random() * images.length)
 
-  const m3 = new Discord.Attachment(images[idx])
+  const attachment = new Discord.Attachment(images[idx])
   receivedMessage.channel.send(attachment)
 }
 
