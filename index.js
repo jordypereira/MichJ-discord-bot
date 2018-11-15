@@ -8,19 +8,19 @@ client.on('ready', () => {
   client.user.setActivity('Meisjes', { type: 'WATCHING' })
 
   // Print Channel info
-  client.guilds.forEach(guild => {
-    console.log(guild.name)
-    guild.emojis.forEach(emoji => {
-      console.log(`${emoji.name}'s id: ${emoji.id}`)
-    })
-    guild.channels.forEach(channel => {
-      console.log(`- ${channel.name} ${channel.type} ${channel.id}`)
-    })
-  })
+  // client.guilds.forEach(guild => {
+  //   console.log(guild.name)
+  //   guild.emojis.forEach(emoji => {
+  //     console.log(`${emoji.name}'s id: ${emoji.id}`)
+  //   })
+  //   guild.channels.forEach(channel => {
+  //     console.log(`- ${channel.name} ${channel.type} ${channel.id}`)
+  //   })
+  // })
 
   // Bot intro
   let generalChannel = client.channels.get('167348561871241216')
-  generalChannel.send(randomWelcomeMessage())
+  // generalChannel.send(randomWelcomeMessage())
   // const attachment = new Discord.Attachment('./MJ.png')
   // generalChannel.send(attachment)
 })
@@ -64,6 +64,8 @@ const processCommand = receivedMessage => {
     multiplyCommand(splitCommand, receivedMessage)
   } else if (primaryCommand == 'add') {
     addCommand(splitCommand, receivedMessage)
+  } else if (primaryCommand == 'wie') {
+    wieCommand(splitCommand, receivedMessage)
   } else {
     receivedMessage.channel.send('He?')
   }
@@ -99,6 +101,24 @@ const addCommand = (args, receivedMessage) => {
     answer += parseFloat(value)
   })
   receivedMessage.channel.send(`Pak dat het ${answer.toString()} is`)
+}
+
+const wieCommand = (args, receivedMessage) => {
+  if (args[0] == 'is' && (args[1] == 'michael' || args[1] == 'Michael')) {
+    wieIsMichaelCommand(receivedMessage)
+  }
+}
+
+const wieIsMichaelCommand = receivedMessage => {
+  const images = [
+    './images/MJ.png',
+    './images/michael.jpg',
+    './images/michael_v1.jpg',
+  ]
+  const idx = Math.floor(Math.random() * images.length)
+
+  const m3 = new Discord.Attachment(images[idx])
+  receivedMessage.channel.send(attachment)
 }
 
 client.login(process.env.APPLICATION_KEY)
