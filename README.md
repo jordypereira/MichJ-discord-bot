@@ -6,6 +6,9 @@ Find commands to add in the [Discord.js](https://discord.js.org/#/docs/main/stab
 
 ## Install local
 
+You can test the commands locally with your own bot.
+- git clone https://github.com/perjor/MichJ-discord-bot.git
+- cd MichJ-discord-bot
 - cp .env.example .env
 - fill in the Application key
 - npm install
