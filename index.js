@@ -1,126 +1,66 @@
-require('dotenv').config()
-const Discord = require('discord.js')
-const client = new Discord.Client()
+import 'dotenv/config'
+import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js'
+import { commandsByName } from './commands.js'
 
-client.on('ready', () => {
-  console.log(client.user.id)
+const { DISCORD_TOKEN, MICHAEL_EMOJI_ID } = process.env
 
-  client.user.setActivity('Meisjes', { type: 'WATCHING' })
-
-  // Print Channel info
-  // client.guilds.forEach(guild => {
-  //   console.log(guild.name)
-  //   guild.emojis.forEach(emoji => {
-  //     console.log(`${emoji.name}'s id: ${emoji.id}`)
-  //   })
-  //   guild.channels.forEach(channel => {
-  //     console.log(`- ${channel.name} ${channel.type} ${channel.id}`)
-  //   })
-  // })
-
-  // Bot intro
-  let generalChannel = client.channels.get('167348561871241216')
-  // generalChannel.send(randomWelcomeMessage())
-  // const attachment = new Discord.Attachment('./MJ.png')
-  // generalChannel.send(attachment)
-})
-
-client.on('message', receivedMessage => {
-  if (receivedMessage.author == client.user) return
-
-  reactOnMichael(receivedMessage)
-
-  if (receivedMessage.content.startsWith('!')) processCommand(receivedMessage)
-})
-
-const randomWelcomeMessage = () => {
-  const messages = ['Ey meisjes wa make', 'Klaar om te plooien']
-  const idx = Math.floor(Math.random() * messages.length)
-  return messages[idx]
+if (!DISCORD_TOKEN) {
+  console.error('DISCORD_TOKEN ontbreekt. Kopieer .env.example naar .env.')
+  process.exit(1)
 }
 
-const reactOnMichael = receivedMessage => {
-  if (
-    receivedMessage.content.includes('michael') ||
-    receivedMessage.content.includes('Michael')
-  ) {
-    try {
-      const michaelFaceEmoji = '248852537116065792'
-      receivedMessage.react(receivedMessage.guild.emojis.get(michaelFaceEmoji))
-    } catch (error) {
-      console.log("Emoji doesn't exist.")
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    // Privileged: enable "Message Content Intent" in the developer portal,
+    // otherwise the michael reaction never fires.
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
+  ],
+})
+
+client.once(Events.ClientReady, readyClient => {
+  console.log(`Ingelogd als ${readyClient.user.tag} (${readyClient.user.id})`)
+  readyClient.user.setActivity('Meisjes', { type: 3 }) // 3 = Watching
+})
+
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return
+
+  const command = commandsByName.get(interaction.commandName)
+  if (!command) {
+    await interaction.reply({ content: 'He?', flags: MessageFlags.Ephemeral })
+    return
+  }
+
+  try {
+    await command.execute(interaction)
+  } catch (error) {
+    console.error(`Commando ${interaction.commandName} faalde:`, error)
+    const response = { content: 'He?', flags: MessageFlags.Ephemeral }
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(response).catch(() => {})
+    } else {
+      await interaction.reply(response).catch(() => {})
     }
   }
-}
+})
 
-const processCommand = receivedMessage => {
-  const fullCommand = receivedMessage.content.substr(1)
-  const splitCommand = fullCommand.split(' ')
-  const primaryCommand = splitCommand.shift()
+client.on(Events.MessageCreate, async message => {
+  if (message.author.bot) return
+  if (!MICHAEL_EMOJI_ID) return
+  if (!/michael/i.test(message.content)) return
 
-  if (primaryCommand == 'help') {
-    helpCommand(splitCommand, receivedMessage)
-  } else if (primaryCommand == 'multiply') {
-    multiplyCommand(splitCommand, receivedMessage)
-  } else if (primaryCommand == 'add') {
-    addCommand(splitCommand, receivedMessage)
-  } else if (primaryCommand == 'wie') {
-    wieCommand(splitCommand, receivedMessage)
-  } else {
-    receivedMessage.channel.send('He?')
-  }
-}
-
-const helpCommand = (args, receivedMessage) => {
-  if (args.length === 0) {
-    receivedMessage.channel.send('Wa wilt ge weten G')
-  } else {
-    receivedMessage.channel.send(`Bhu jo, probeer es ${args} te googlen.`)
-  }
-}
-
-const multiplyCommand = (args, receivedMessage) => {
-  if (args.length < 2) {
-    receivedMessage.channel.send('Shit das een moeilijke')
+  const emoji = message.guild?.emojis.cache.get(MICHAEL_EMOJI_ID)
+  if (!emoji) {
+    console.warn(`Emoji ${MICHAEL_EMOJI_ID} bestaat niet op deze server.`)
     return
   }
-  let answer = 1
-  args.forEach(value => {
-    answer = answer * parseFloat(value)
+
+  await message.react(emoji).catch(error => {
+    console.error('Reageren mislukt:', error)
   })
-  receivedMessage.channel.send('Ik denk ' + answer.toString())
-}
+})
 
-const addCommand = (args, receivedMessage) => {
-  if (args.length < 2) {
-    receivedMessage.channel.send('Daarvoor ga ik nie tellen')
-    return
-  }
-  let answer = 0
-  args.forEach(value => {
-    answer += parseFloat(value)
-  })
-  receivedMessage.channel.send(`Pak dat het ${answer.toString()} is`)
-}
-
-const wieCommand = (args, receivedMessage) => {
-  if (args[0] == 'is' && (args[1] == 'michael' || args[1] == 'Michael')) {
-    wieIsMichaelCommand(receivedMessage)
-  } else {
-    receivedMessage.channel.send('Wie of wat maakt nie uit')
-  }
-}
-
-const wieIsMichaelCommand = receivedMessage => {
-  const images = [
-    './images/MJ.png',
-    './images/michael.jpg',
-    './images/michael_v1.jpg',
-  ]
-  const idx = Math.floor(Math.random() * images.length)
-
-  const attachment = new Discord.Attachment(images[idx])
-  receivedMessage.channel.send(attachment)
-}
-
-client.login(process.env.APPLICATION_KEY)
+client.login(DISCORD_TOKEN)
